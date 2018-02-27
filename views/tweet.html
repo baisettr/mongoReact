@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>TweetTo</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.5.4/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.5.4/react-dom.js"></script>
+</head>
+
+<body>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill);
+            grid-gap: 50px;
+            object-fit: cover;
+            padding: 10px;
+        }
+
+        .grid-item {
+            background-color: rgba(201, 198, 197, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            font-size: 20px;
+            color: black;
+            border-radius: 25px;
+        }
+
+        .grid-item:hover {
+            background-color: rgba(145, 142, 142, 0.3);
+            color: cadetblue;
+        }
+    </style>
+    <div id="hello"></div>
+
+    <script>
+        class TweetComponent extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = Object.assign({}, { tweets: props.tweets });
+            }
+            componentDidMount() {
+                this.fetchAll();
+            }
+            fetchAll() {
+                fetch('./tweets')
+                    .then(res => res.json())
+                    .then(tweets => this.setState({ tweets: tweets }));
+            }
+            updateSearchByTag(event) {
+                var tag = this.refs.searchbyTag.value;
+                console.log(tag);
+                fetch('./tweetContent/' + tag)
+                    .then(res => res.json())
+                    .then(tweets => this.setState({ tweets: tweets }));
+            }
+            updateSearchByName(event) {
+                var name = this.refs.searchbyName.value;
+                console.log(name);
+                fetch('./tweetName/' + name)
+                    .then(res => res.json())
+                    .then(tweets => this.setState({ tweets: tweets }));
+            }
+            updateSearchByAll(event) {
+                this.fetchAll();
+            }
+            addTweet(event) {
+                event.preventDefault();
+                var data = { depC: this.refs.tweetUser.value, dept: this.refs.tweetContent.value };
+                //this.setState({tweets: this.state.tweets.concat(data)})
+                this.refs.tweetUser.value = '';
+                this.refs.tweetContent.value = '';
+                this.postTweet(data);
+            }
+            postTweet(data) {
+                fetch('./addTweet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json())
+                    .then(newTweet => { this.setState({ tweets: this.state.tweets.concat(newTweet) }) });
+            }
+            deleteTweet(event, tweetId) {
+                console.log(event, tweetId);
+                fetch('./deleteTweet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: tweetId })
+                    .then(res => res.json())
+                    .then(confirm => {
+                        if (confirm) {
+                            this.setState({ tweets: this.state.tweets.filter(e => e._id !== tweetId) })
+                        }
+                    });
+            }
+            render() {
+                return (
+                    React.createElement("div", { className: 'container', style: { padding: '20px' } },
+                        React.createElement("div", { className: 'jumbotron' },
+                            React.createElement("div", { className: "input-group mb-3" },
+                                React.createElement("input", { type: "text", className: "form-control", ref: 'searchbyTag', placeholder: "Search in content" }),
+                                React.createElement("div", { className: "input-group-append" },
+                                    React.createElement("button", { className: "btn btn-outline-secondary", onClick: this.updateSearchByTag.bind(this), type: "button" }, "Fetch Results")
+                                )
+                            ),
+                            React.createElement("div", { className: "input-group mb-3" },
+                                React.createElement("div", { className: "input-group-prepend" },
+                                    React.createElement("div", { className: "input-group-text", style: { color: 'orange' } }, '@')
+                                ),
+                                React.createElement("input", { type: "text", className: "form-control", ref: 'searchbyName', placeholder: "Enter name here" }),
+                                React.createElement("div", { className: "input-group-append" },
+                                    React.createElement("button", { className: "btn btn-outline-secondary", onClick: this.updateSearchByName.bind(this), type: "button" }, "Fetch User")
+                                )
+                            ),
+                            React.createElement('br'),
+                            React.createElement('div', { className: '' },
+                                React.createElement("form", { className: 'form-inline', onSubmit: this.addTweet.bind(this) },
+                                    React.createElement("div", { className: "form-group mb-2" },
+                                        React.createElement("div", { className: "input-group-prepend" },
+                                            React.createElement("div", { className: "input-group-text", style: { color: 'orange' } }, '@')
+                                        ),
+                                        React.createElement("input", { className: 'form-control', type: 'text', ref: 'tweetUser', required: true, placeholder: 'Enter Name' }),
+                                    ),
+                                    React.createElement("div", { className: "form-group mx-sm-3 mb-2" },
+                                        React.createElement("input", { className: 'form-control', type: 'text', ref: 'tweetContent', required: true, placeholder: 'Enter Content' }),
+                                    ),
+                                    React.createElement("button", { className: 'btn btn-success mb-2', style: { float: 'right' }, type: 'submit' }, "Post"),
+                                ),
+                            ),
+                        ),
+                        React.createElement("button", { className: 'btn btn-primary', style: { float: "right", margin: '10px' }, onClick: this.updateSearchByAll.bind(this) }, "Fetch All"),
+                        React.createElement("div", { className: 'grid-container' },
+                            this.state.tweets.map((tweet) => {
+                                return (
+                                    React.createElement("div", { key: tweet._id, className: 'grid-item' },
+                                        React.createElement("button", { className: 'btn btn-danger', style: { float: "right", margin: '10px' }, onClick: this.deleteTweet.bind(this, tweet._id) }, "Delete"),
+                                        React.createElement("h2", { style: { color: "orange" } }, '@' + tweet.tweetUser),
+                                        React.createElement("h4", {}, tweet.tweetContent),
+                                    )
+                                )
+                            })
+                        )
+                    )
+                )
+            }
+        }
+        const tweets = [{ _id: 1, tweetUser: "hello1", tweetContent: "heroku" }, { _id: 2, tweetUser: "hello2", tweetContent: "dataJson" }]
+        ReactDOM.render(
+            React.createElement(TweetComponent, { tweets: tweets }),
+            document.getElementById("hello")
+        );
+    </script>
+</body>
+
+</html>
