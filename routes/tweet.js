@@ -1,54 +1,135 @@
 const express = require('express');
 router = express.Router();
 
-var courses = require('../views/courses.json');
-var Review = require('../schema/review');
+var Tweet = require('../schema/tweet');
 
 
 router.get('/', function (req, res, next) {
-    var courseName = req.query.courseName;
-    var courseId = req.query.courseId;
-    var deptId = req.query.deptId;
-    res.render('review.pug', { deptId: deptId, courseId: courseId, courseName: courseName });
+    res.render('tweet.pug');
 });
 
-router.get('/reviews', function (req, res, next) {
-    var courseId = req.query.courseId;
-    var averageRating = [{ avgTotal: 0 }];
-    Review.find({ courseId: courseId }).sort('-postedDate')
-        .then((courseReviews) => {
-            //Review.aggregate([{ $group: { _id: "$courseTerm", avgTerm: { $avg: "$courseRating" } } }]).sort('avgTerm')
-            Review.aggregate([{ $match: { courseId: courseId } }, { $group: { _id: "$courseId", avgTotal: { $avg: "$courseRating" } } }])
-                .then((rating) => {
-                    //console.log(rating);
-                    if (rating.length) averageRating = rating;
-                    res.send(JSON.stringify({ courseReviews: courseReviews, averageRating: averageRating[0]['avgTotal'] }));
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
-            //console.log(courseReviews);
+router.get('/tweets', function (req, res, next) {
+    //  return recent tweets based on postedDate (sort)
+    Tweet.find({}).sort('-postedDate')
+        .then((data) => {
+            res.send(data);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    //  return tweets  
+    /*Tweet.find({})
+        .then((data) => {
+            res.send(data);
+        })
+        .catch((err) => {
+            console.log(err);
+        })*/
+});
+
+router.get('/tweetContent/:tweetContent', function (req, res, next) {
+    let tweetContent = req.params.tweetContent
+    //  return tweets based on tweet conetent like
+    /*Tweet.find({ tweetContent: new RegExp(tweetContent, 'i') })
+        .then((data) => {
+            res.send(data);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    Tweet.find({ tweetContent: { $regex: tweetContent, $options: 'i' } })
+        .then((data) => {
+            res.send(data);
+        })
+        .catch((err) => {
+            console.log(err);
+        })*/
+
+    Tweet.find({ tweetContent: { $regex: tweetContent, $options: 'i' } }).where('tweetUser').equals('hello').select({ tweetUser: 1, tweetContent: 1, _id: 1 })
+        .then((data) => {
+            console.log(data)
+            res.send(data);
         })
         .catch((err) => {
             console.log(err);
         })
 });
 
-
-router.post('/addReview', function (req, res, next) {
-    //console.log(req.body);
-    var review = new Review({ courseId: req.body.courseId, courseTerm: req.body.courseTerm, coursePros: req.body.coursePros, courseCons: req.body.courseCons, courseLinks: req.body.courseLinks, courseTips: req.body.courseTips, courseFeedback: req.body.courseFeedback, courseRating: req.body.courseRating, courseOverall: req.body.courseOverall, postedDate: Date.now() });
-    //console.log(review);
-    review.save()
-        .then(() => {
-            //console.log("save");
-            //res.render('course.pug', { deptId: req.body.crsId.match('[a-zA-Z]*')[0] });
-            res.send(JSON.stringify(review));
-            //res.json({ 'a': 1 });
+router.get('/tweetUser/:tweetUser', function (req, res, next) {
+    let tweetUser = req.params.tweetUser
+    //  return tweets posted by a tweetUser
+    Tweet.find({ tweetUser: tweetUser })
+        .then((data) => {
+            res.send(data);
         })
         .catch((err) => {
             console.log(err);
         })
 });
+
+router.post('/addTweet', function (req, res, next) {
+    //  insert a tweet 
+    let tweet = new Tweet({ tweetUser: req.body.tweetUser, tweetContent: req.body.tweetContent });
+    //console.log(tweet);
+    tweet.save()
+        .then((e) => {
+            //console.log(e);
+            res.send(JSON.stringify(tweet));
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+});
+
+router.post('/updateTweet', function (req, res, next) {
+    //  update the tweet content based on _id
+    Tweet.update({ _id: req.body.tweetId }, { $set: { tweetContent: req.body.tweetContent } })
+        .then((e) => {
+            //console.log(e);
+            res.send(JSON.stringify({ check: true }));
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+});
+
+router.post('/deleteTweet', function (req, res, next) {
+    let tweetId = req.body.tweetId
+    //  remove a tweet based on _id
+    Tweet.remove({ _id: tweetId })
+        .then((e) => {
+            //console.log(e);
+            res.send(JSON.stringify({ check: true }));
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+});
+
+/*Ref
+// With a JSON doc
+Person.
+find({
+  occupation: /host/,
+  'name.last': 'Ghost',
+  age: { $gt: 17, $lt: 66 },
+  likes: { $in: ['vaporizing', 'talking'] }
+}).
+limit(10).
+sort({ occupation: -1 }).
+select({ name: 1, occupation: 1 }).
+exec(callback);
+
+// Using query builder
+Person.
+find({ occupation: /host/ }).
+where('name.last').equals('Ghost').
+where('age').gt(17).lt(66).
+where('likes').in(['vaporizing', 'talking']).
+limit(10).
+sort('-occupation').
+select('name occupation').
+exec(callback);
+*/
 
 module.exports = router;

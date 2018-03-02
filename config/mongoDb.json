@@ -1,5 +1,5 @@
 {
-    "db": "tweets",
+    "db": "ex",
     "host": "localhost",
-    "url": "mongodb://localhost/tweets"
+    "url": "mongodb://localhost/ex"
 }

@@ -66,6 +66,7 @@
                     .then(tweets => this.setState({ tweets: tweets }));
             }
             updateSearchByAll(event) {
+                //this.setState({ tweets: [{ _id: 1, tweetUser: "hello1", tweetContent: "heroku" }] });
                 this.fetchAll();
             }
             addTweet(event) {
@@ -80,6 +81,28 @@
                 fetch('./addTweet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
                     .then(res => res.json())
                     .then(newTweet => { this.setState({ tweets: this.state.tweets.concat(newTweet) }) });
+            }
+            editTweet(tweetId) {
+                $('#' + tweetId + 'Edt').attr('hidden', true);
+                $('#' + tweetId + 'Upt').attr('hidden', false);
+                $('#' + tweetId + 'ShwCnt').attr('hidden', true);
+                $('#' + tweetId + 'UptCnt').attr('hidden', false);
+            }
+            updateTweet(tweetId) {
+                $('#' + tweetId + 'Edt').attr('hidden', false);
+                $('#' + tweetId + 'Upt').attr('hidden', true);
+                $('#' + tweetId + 'ShwCnt').attr('hidden', false);
+                $('#' + tweetId + 'UptCnt').attr('hidden', true);
+                var tweetContent = $('#' + tweetId + 'UptCnt').val();
+                console.log(tweetContent);
+                this.setState({ tweets: this.state.tweets.map((tweet) => { if (tweet._id === tweetId) { tweet.tweetContent = tweetContent } return tweet }) })
+                fetch('./updateTweet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: { tweetId, tweetContent } })
+                    .then(res => res.json())
+                    .then(confirm => {
+                        if (confirm) {
+                            this.fetchAll();
+                        }
+                    });
             }
             deleteTweet(event, tweetId) {
                 console.log(event, tweetId);
@@ -132,8 +155,11 @@
                                 return (
                                     React.createElement("div", { key: tweet._id, className: 'grid-item' },
                                         React.createElement("button", { className: 'btn btn-danger', style: { float: "right", margin: '10px' }, onClick: this.deleteTweet.bind(this, tweet._id) }, "Delete"),
+                                        React.createElement("input", { type: 'button', className: 'btn btn-info', id: tweet._id + 'Edt', style: { float: "right", margin: '10px' }, onClick: this.editTweet.bind(this, tweet._id), value: 'Edit', hidden: false }),
+                                        React.createElement("input", { type: 'button', className: 'btn btn-info', id: tweet._id + 'Upt', style: { float: "right", margin: '10px' }, onClick: this.updateTweet.bind(this, tweet._id), value: 'Update', hidden: true }),
                                         React.createElement("h2", { style: { color: "orange" } }, '@' + tweet.tweetUser),
-                                        React.createElement("h4", {}, tweet.tweetContent),
+                                        React.createElement("h4", { id: tweet._id + 'ShwCnt', hidden: false }, tweet.tweetContent),
+                                        React.createElement("input", { type: 'text', id: tweet._id + 'UptCnt', defaultValue: tweet.tweetContent, hidden: true }),
                                     )
                                 )
                             })
