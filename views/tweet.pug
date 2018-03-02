@@ -44,7 +44,7 @@ block content
                 if (content){
                 fetch('./tweet/tweetContent/' + content)
                     .then(res => res.json())
-                    .then(tweets => this.setState({ tweets: tweets }));
+                    .then(tweets => { this.setState({ tweets: tweets }); this.refs.searchByContent.value=''; });
                 }
             }
             searchByUser(event) {
@@ -53,7 +53,7 @@ block content
                 if (user){
                 fetch('./tweet/tweetUser/' + user)
                     .then(res => res.json())
-                    .then(tweets => this.setState({ tweets: tweets }));
+                    .then(tweets => { this.setState({ tweets: tweets }); this.refs.searchByUser.value=''; });
                 }
             }
             updateSearchByAll(event) {
