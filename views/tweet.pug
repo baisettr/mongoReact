@@ -38,19 +38,23 @@ block content
                     .then(res => res.json())
                     .then(tweets => this.setState({ tweets: tweets }));
             }
-            updateSearchByTag(event) {
-                var tag = this.refs.searchbyTag.value;
-                console.log(tag);
-                fetch('./tweet/tweetContent/' + tag)
+            searchByContent(event) {
+                var content = this.refs.searchByContent.value;
+                console.log(content);
+                if (content){
+                fetch('./tweet/tweetContent/' + content)
                     .then(res => res.json())
                     .then(tweets => this.setState({ tweets: tweets }));
+                }
             }
-            updateSearchByName(event) {
-                var name = this.refs.searchbyName.value;
-                console.log(name);
-                fetch('./tweet/tweetUser/' + name)
+            searchByUser(event) {
+                var user = this.refs.searchByUser.value;
+                console.log(user);
+                if (user){
+                fetch('./tweet/tweetUser/' + user)
                     .then(res => res.json())
                     .then(tweets => this.setState({ tweets: tweets }));
+                }
             }
             updateSearchByAll(event) {
                 //this.setState({ tweets: [{ _id: 1, tweetUser: "hello1", tweetContent: "heroku" }] });
@@ -108,18 +112,18 @@ block content
                             React.createElement('h2',{style: { textAlign: 'center',color:'#1B95E1' }},'#TweeTo'),
                         React.createElement("div", { className: 'jumbotron' },
                             React.createElement("div", { className: "input-group mb-3" },
-                                React.createElement("input", { type: "text", className: "form-control", ref: 'searchbyTag', placeholder: "Search in content" }),
+                                React.createElement("input", { type: "text", className: "form-control", ref: 'searchByContent', placeholder: "Search in content" }),
                                 React.createElement("div", { className: "input-group-append" },
-                                    React.createElement("button", { className: "btn btn-outline-secondary", onClick: this.updateSearchByTag.bind(this), type: "button" }, "Fetch Results")
+                                    React.createElement("button", { className: "btn btn-outline-secondary", onClick: this.searchByContent.bind(this), type: "button" }, "Fetch Results")
                                 )
                             ),
                             React.createElement("div", { className: "input-group mb-3" },
                                 React.createElement("div", { className: "input-group-prepend" },
                                     React.createElement("div", { className: "input-group-text", style: { color: 'orange' } }, '@')
                                 ),
-                                React.createElement("input", { type: "text", className: "form-control", ref: 'searchbyName', placeholder: "Search By User" }),
+                                React.createElement("input", { type: "text", className: "form-control", ref: 'searchByUser', placeholder: "Search By User" }),
                                 React.createElement("div", { className: "input-group-append" },
-                                    React.createElement("button", { className: "btn btn-outline-secondary", onClick: this.updateSearchByName.bind(this), type: "button" }, "Fetch User")
+                                    React.createElement("button", { className: "btn btn-outline-secondary", onClick: this.searchByUser.bind(this), type: "button" }, "Fetch User")
                                 )
                             ),
                             React.createElement('br'),
