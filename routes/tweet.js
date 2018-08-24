@@ -36,23 +36,23 @@ router.get('/tweetContent/:tweetContent', function (req, res, next) {
         })
         .catch((err) => {
             console.log(err);
-        })
+        })*/
     Tweet.find({ tweetContent: { $regex: tweetContent, $options: 'i' } })
         .then((data) => {
             res.send(data);
         })
         .catch((err) => {
             console.log(err);
-        })*/
+        })
 
-    Tweet.find({ tweetContent: { $regex: tweetContent, $options: 'i' } }).where('tweetUser').equals('hello').select({ tweetUser: 1, tweetContent: 1, _id: 1 })
+    /*Tweet.find({ tweetContent: { $regex: tweetContent, $options: 'i' } }).where('tweetUser').equals('hello').select({ tweetUser: 1, tweetContent: 1, _id: 1 })
         .then((data) => {
             console.log(data)
             res.send(data);
         })
         .catch((err) => {
             console.log(err);
-        })
+        })*/
 });
 
 router.get('/tweetUser/:tweetUser', function (req, res, next) {
